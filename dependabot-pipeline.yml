@@ -1,0 +1,12 @@
+trigger: none
+
+variables:
+ - group: Dependabot
+
+pool:
+  name: Dependabot
+
+steps:
+- task: dependabot@1
+  inputs:
+    azureDevOpsAccessToken: $(AzDoPAT)
