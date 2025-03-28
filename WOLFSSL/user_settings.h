@@ -23,7 +23,24 @@
 
 #ifndef _WIN_CSHARP_USER_SETTINGS_H_
 #define _WIN_CSHARP_USER_SETTINGS_H_
+
 #define WOLFSSL_IGNORE_FILE_WARN
+#define _WIN32_WCE
+#define NO_WOLFSSL_DIR
+#define SIZEOF_LONG_LONG 8
+#define SIZEOF_LONG 4
+#define SINGLE_THREADED
+#define NO_MAIN_DRIVER
+#define BENCH_EMBEDDED
+
+/* For testing use test seed - NEEDS FIXED */
+#define WOLFSSL_GENSEED_FORTEST
+
+#define USE_WOLF_STRTOK
+#define XSNPRINTF StringCbPrintfA
+#include <string.h> /* for strcpy_s */
+
+
 /* Features */
 #define NO_OLD_TLS
 #define WOLFSSL_TLS13
@@ -45,6 +62,7 @@
 #define WOLFSSL_KEY_GEN /* RSA key gen */
 #define WOLFSSL_ASN_TEMPLATE /* default */
 #define WOLFSSL_SHA3
+
 
 #if 0
     #define OPENSSL_EXTRA

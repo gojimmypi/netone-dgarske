@@ -2679,7 +2679,7 @@ int wc_GenerateSeed(OS_Seed* os, byte* output, word32 sz)
     return (ret == SGX_SUCCESS) ? 0 : 1;
 }
 
-#elif defined(USE_WINDOWS_API)
+#elif defined(USE_WINDOWS_API) && !defined(WOLFSSL_GENSEED_FORTEST)
 
 int wc_GenerateSeed(OS_Seed* os, byte* output, word32 sz)
 {
