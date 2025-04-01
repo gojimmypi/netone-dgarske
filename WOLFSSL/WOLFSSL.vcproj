@@ -145,7 +145,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="cp &quot;$(OutDir)\$(ProjectName).dll&quot; &quot;$(SolutionDir)\WinCE\Resources\Wolfssl\&quot;"
+				CommandLine="copy &quot;$(OutDir)\$(ProjectName).dll&quot; &quot;$(SolutionDir)\WinCE\Resources\Wolfssl\&quot;"
 			/>
 			<DeploymentTool
 				ForceDirty="-1"
