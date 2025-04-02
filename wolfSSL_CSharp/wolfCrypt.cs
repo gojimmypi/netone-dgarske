@@ -21,6 +21,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace wolfSSL.CSharp
@@ -2424,15 +2425,25 @@ namespace wolfSSL.CSharp
             return publicKey;
         }
 
+
         /// <summary>
         /// Export both private and public keys from a Curve25519 key structure
         /// </summary>
         /// <param name="key">Curve25519 key structure</param>
-        /// <returns>void, see `out` parameters containing the private key and public key as byte arrays</returns>
+        /// <returns>A tuple containing the private key and public key as byte arrays</returns>
+    #if NET7_0_OR_GREATER
+        public static (byte[] privateKey, byte[] publicKey) Curve25519ExportKeyRaw(IntPtr key)
+    #else
         public static void Curve25519ExportKeyRaw(IntPtr key, out byte[] privateKey, out byte[] publicKey)
+    #endif
         {
+        #if NET7_0_OR_GREATER
+            byte[] privateKey = new byte[ED25519_KEY_SIZE];
+            byte[] publicKey = new byte[ED25519_PUB_KEY_SIZE];
+        #else
             privateKey = new byte[ED25519_KEY_SIZE];
             publicKey = new byte[ED25519_PUB_KEY_SIZE];
+        #endif
             uint privSize = (uint)privateKey.Length;
             uint pubSize = (uint)publicKey.Length;
             int ret = wc_curve25519_export_key_raw(key, privateKey, ref privSize, publicKey, ref pubSize);
@@ -2440,8 +2451,11 @@ namespace wolfSSL.CSharp
             {
                 throw new Exception("Failed to export Curve25519 keys. Error code: " + ret);
             }
-
+        #if NET7_0_OR_GREATER
+            return (privateKey, publicKey);
+        #else
             return;
+        #endif
         }
         /* END RAW Curve25519 */
 
@@ -2498,7 +2512,7 @@ namespace wolfSSL.CSharp
                 ret = wc_AesGcmSetKey(aes, keyPtr, (uint)key.Length);
                 if (ret != 0)
                 {
-                    throw new Exception("AES-GCM initialization failed with error code ret = " + ret.ToString());
+                    throw new Exception("AES-GCM initialization failed with error code {ret}");
                 }
             }
             finally
@@ -2534,7 +2548,7 @@ namespace wolfSSL.CSharp
                 ret = wc_AesGcmInit(aes, keyPtr, (uint)key.Length, ivPtr, (uint)iv.Length);
                 if (ret != 0)
                 {
-                    throw new Exception("AES-GCM initialization failed with error code ret = " + ret.ToString());
+                    throw new Exception("AES-GCM initialization failed with error code {ret}");
                 }
             }
             finally
@@ -2613,6 +2627,11 @@ namespace wolfSSL.CSharp
 
             return ret;
         }
+        public static int AesGcmEncrypt(IntPtr aes, byte[] iv, byte[] plaintext,
+            byte[] ciphertext, byte[] authTag)
+        {
+            return AesGcmEncrypt(aes, iv, plaintext, ciphertext, null);
+        }
 
         /// <summary>
         /// Decrypt data using AES-GCM
@@ -2679,6 +2698,11 @@ namespace wolfSSL.CSharp
             }
 
             return ret;
+        }
+        public static int AesGcmDecrypt(IntPtr aes, byte[] iv, byte[] ciphertext,
+            byte[] plaintext, byte[] authTag)
+        {
+            return AesGcmDecrypt(aes, iv, ciphertext, plaintext, authTag, null);
         }
 
         /// <summary>
@@ -2747,7 +2771,7 @@ namespace wolfSSL.CSharp
                 ret = wc_HashInit(hash, hashType);
                 if (ret != 0)
                 {
-                    throw new Exception("Failed to initialize hash context. Error code: ret = " + ret.ToString());
+                    throw new Exception("Failed to initialize hash context. Error code: {ret}");
                 }
             }
             catch (Exception e)
@@ -2791,7 +2815,7 @@ namespace wolfSSL.CSharp
                 ret = wc_HashUpdate(hash, hashType, dataPtr, (uint)data.Length);
                 if (ret != 0)
                 {
-                    throw new Exception("Failed to update hash. Error code: ret = " + ret.ToString());
+                    throw new Exception("Failed to update hash. Error code: {ret}");
                 }
             }
             catch (Exception e)
@@ -2837,7 +2861,7 @@ namespace wolfSSL.CSharp
                 ret = wc_HashFinal(hash, hashType, outputPtr);
                 if (ret != 0)
                 {
-                    throw new Exception("Failed to finalize hash. Error code: ret = " + ret.ToString());
+                    throw new Exception("Failed to finalize hash. Error code: {ret}");
                 }
 
                 Marshal.Copy(outputPtr, output, 0, hashSize);
@@ -2877,7 +2901,7 @@ namespace wolfSSL.CSharp
                 hash = IntPtr.Zero;
                 if (ret != 0)
                 {
-                    throw new Exception("Failed to free hash context. Error code: ret = " + ret.ToString());
+                    throw new Exception("Failed to free hash context. Error code: {ret}");
                 }
             }
             catch (Exception e)

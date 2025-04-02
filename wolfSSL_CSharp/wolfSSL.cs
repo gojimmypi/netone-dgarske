@@ -21,156 +21,20 @@
 
 
 using System;
-using System.Configuration;
+using System.Runtime.InteropServices;
+using System.Text;
+using System.Threading;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
-using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Text;
-/* using System.Threading; not supported in older frameworks */
 
-#if USE_STDCALL
-    /* See wolfssl visibiliity.h */
-#error "__stdcall is not allowed. Use CallingConvention.Cdecl instead."
-#endif
-
-namespace wolfSSL.CSharp
-{
+namespace wolfSSL.CSharp {
     public class wolfssl
     {
-        /* Import necessary Windows API functions to manually load library */
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern IntPtr LoadLibrary(string dllPath);
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern IntPtr GetProcAddress(IntPtr hModule, string procName);
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        private static extern bool FreeLibrary(IntPtr hModule);
-
-        private static IntPtr _dllHandle;
-
-        private const string wolfssl_dll            = "wolfssl.dll";
-        private const string WOLFSSL_CERTS_PATH_KEY = "WOLFSSL_CERTS_PATH";
-        private const string WOLFSSL_DLL_PATH_KEY   = "WOLFSSL_DLL_PATH";
-        private static string _WOLFSSL_CERTS_PATH = string.Empty;
-        private static string _WOLFSSL_DLL_PATH = string.Empty;
-
-        /* See also optional hints to find wolfSSL binary:
-         *    WOLFSSL_ROOT environment setting
-         *    WOLFSSL_DLL_PATH App.config setting
-         */
-
-        private static bool _DEBUG_WOLFSSL = false;
+        private const string wolfssl_dll = "wolfssl.dll";
 
         /* wait for 6 seconds default on TCP socket state poll if timeout not set */
         private const int WC_WAIT = 6000000;
-
-        /* GetConfigValue helper since App.config not implemented on all versions of Visual Studio.
-         * When not avilable, fall back to environment variable config */
-        public static string GetConfigValue(string key)
-        {
-            object obj;
-            string value = string.Empty;
-            bool foundConfig = false;
-
-            /* Special case for WOLFSSL_DLL_PATH on old platforms */
-            if (key == "WOLFSSL_DLL_PATH")
-            {
-                value = _WOLFSSL_DLL_PATH;
-            }
-
-            /* Special case for WOLFSSL_DLL_PATH on old platforms */
-            if (key == "WOLFSSL_CERTS_PATH")
-            {
-                value = _WOLFSSL_CERTS_PATH;
-            }
-
-            /* If we found a value, this is likely from older versions of Visual Studio */
-            if (value == string.Empty) {
-            }
-            else
-            {
-                WriteDebugString("Found special case config for key = [" + key + "]", "");
-                foundConfig = true;
-            }
-
-
-            try
-            {
-                Type configManagerType = Type.GetType("System.Configuration.ConfigurationManager, System.Configuration");
-                if (configManagerType == null)
-                {
-                    WriteDebugString("Unable to find ConfigurationManager on this platform (old version of Visual Studio?", "");
-                }
-                else 
-                {
-                    PropertyInfo appSettingsProperty = configManagerType.GetProperty("AppSettings");
-                    if (appSettingsProperty != null)
-                    {
-                        object appSettings = appSettingsProperty.GetValue(null, null);
-                        MethodInfo getItemMethod = appSettings.GetType().GetMethod("get_Item");
-                        if (getItemMethod != null)
-                        {
-                            obj = getItemMethod.Invoke(appSettings, new object[] { key });
-                            if (value != null)
-                            {
-                                value = obj.ToString();
-                            }
-                        }
-                    }
-                }
-            }
-            catch (Exception)
-            {
-                /* Ignore any errors and fallback */
-            }
-
-            if (foundConfig)
-            {
-                WriteDebugString("Found value for ConfigurationManager.AppSettings with key = [" + key + "]", "");
-            }
-            else
-            {
-                WriteDebugString("Falling back to Environment.GetEnvironmentVariable()", "");
-                value = Environment.GetEnvironmentVariable(key) ?? string.Empty;
-            }
-
-            if (value.Equals(string.Empty)) {
-                WriteDebugString("No value was found for key = [" + key + "]", "");
-            }
-            else
-            {
-                WriteDebugString("Found found for key = [" + key + "]", "");
-                WriteDebugString("value found = [" + value + "]", "");
-            }
-
-            return value;
-        }
-
-        /* As not all versions of Visual Studio implement ConfigurationManager, provide an alterative */
-        public static bool set_WOLFSSL_CERTS_PATH(string certPath)
-        {
-            bool ret = false;
-            if (Directory.Exists(certPath)) {
-                _WOLFSSL_CERTS_PATH = certPath;
-                ret = true;
-            }
-            return ret;
-        }
-
-        /* As not all versions of Visual Studio implement ConfigurationManager, provide an alterative */
-        public static bool set_WOLFSSL_DLL_PATH(string dllPath)
-        {
-            bool ret = false;
-            if (Directory.Exists(dllPath))
-            {
-                _WOLFSSL_DLL_PATH = dllPath;
-                ret = true;
-            }
-            return ret;
-        }
 
         /********************************
          * Class for DTLS connections
@@ -368,240 +232,6 @@ namespace wolfSSL.CSharp
             }
         }
 
-        private static string WriteDebugString(string s, string hintText)
-        {
-            string ret = string.Empty;
-#if DEBUG
-            if (string.IsNullOrEmpty(hintText))
-            {
-                ret = s;
-                Console.WriteLine(ret);
-            }
-            else
-            {
-                if (s.Contains("%s"))
-                {
-                    ret = s.Replace("%s", hintText);
-                }
-                else
-                {
-                    ret = hintText + s;
-                }
-
-                Console.WriteLine(ret);
-            }
-#endif
-            return ret;
-        }
-
-        static string GetBuildConfiguration()
-        {
-#if DEBUG
-            return "Debug";
-#else
-            return "Release";
-#endif
-        }
-
-        static string GetArchitecture()
-        {
-            string ret = "Unknown";
-
-            Assembly assembly = Assembly.GetExecutingAssembly();
-            ProcessorArchitecture arch = assembly.GetName().ProcessorArchitecture;
-
-            switch (arch)
-            {
-                case ProcessorArchitecture.MSIL:
-                    ret = "AnyCPU";
-                    break;
-                case ProcessorArchitecture.X86:
-                    ret = "x86";
-                    break;
-                case ProcessorArchitecture.Amd64:
-                    ret = "x64";
-                    break;
-#if ARM
-                case ProcessorArchitecture.Arm:
-                    ret = "Arm";
-                    break
-                case ProcessorArchitecture.Arm64:
-                    ret = "Arm64";
-                    break;
-#endif
-                default: return "Unknown";
-            }
-
-            return ret;
-        }
-
-        /* Helper to check for wolfssl.dll in a specific location */
-        private static string CheckWolfSSLPath(string thisPath, string hintText)
-        {
-            string processorArch;
-            string configAttr;
-            string thisName;
-            string thisFullPath;
-            string thisStartingPath;
-            string altPath;
-            string originalPath;
-            string ret = "";
-
-            bool foundLib = false;
-            bool isSearchDone = false;
-            bool searchAlternates = false;
-
-            originalPath = thisPath;
-            processorArch = GetArchitecture();
-            configAttr = GetBuildConfiguration();
-
-            WriteDebugString("Enter CheckWolfSSLPath()", "");
-            WriteDebugString(" - thisPath:'%s`", thisPath);
-            WriteDebugString(" - hintText:'%s`", hintText);
-
-            if (string.IsNullOrEmpty(thisPath))
-            {
-                WriteDebugString(" - %s is not defined, not used to search for wolfssl.", hintText);
-            }
-            else
-            {
-                thisStartingPath = thisPath;
-                altPath = thisPath;
-
-                while (!foundLib && !isSearchDone)
-                {
-                    thisFullPath = Path.GetFullPath(thisStartingPath) + Path.DirectorySeparatorChar + wolfssl_dll;
-
-                    if (string.IsNullOrEmpty(thisFullPath))
-                    {
-                        WriteDebugString(" - path empty:", hintText);
-                    }
-                    else
-                    {
-                        if (File.Exists(thisFullPath))
-                        {
-                            WriteDebugString(" - Found wolfssl.dll from " + hintText + ":\r\n" + thisFullPath, hintText);
-                            foundLib = true;
-                            ret = thisFullPath;
-                        }
-                        else
-                        {
-                            if (searchAlternates)
-                            {
-                                WriteDebugString(" - %s: '" + altPath + "'", "Tried alternate");
-                            }
-                            else
-                            {
-                                WriteDebugString(" - WARNING: wolfssl.dll not found from %s = " + thisPath, hintText);
-
-                            }
-                        }
-                    }
-
-                    if (!foundLib)
-                    {
-                        thisName = Path.GetFileName(thisStartingPath).ToString();
-                        if (thisName == processorArch)
-                        {
-                            /* get the [dir] parent 2 levels up from [dir]\\Debug\\AnyCPU */
-                            altPath = Directory.GetParent(thisStartingPath).FullName;
-                            altPath = Directory.GetParent(altPath).FullName;
-                            searchAlternates = true;
-                        }
-                        thisName = Path.GetFileName(thisStartingPath).ToString();
-                        if (thisName == configAttr)
-                        {
-                            /* get the [dir] parent from [dir]\\Debug */
-                            altPath = Directory.GetParent(thisStartingPath).FullName;
-                            searchAlternates = true;
-                        }
-
-                        /* We'll search alternates only if the path started in [configAttr][processorArch] (e.g. Debug\AnyCPU)
-                         * as we will never want to search in something like C:\windows\system32\Debug\AnyCPU */
-                        if (searchAlternates)
-                        {
-                            /* see if the next iteration would be the root directory */
-                            if (Directory.GetParent(Directory.GetParent(altPath).FullName) == null)
-                            {
-                                /* We'll never find the dll someplace like C:\Debug\AnyCPU\wolfssl.dll */
-                                isSearchDone = true;
-                            }
-                            else
-                            {
-                                altPath = Directory.GetParent(altPath).FullName; /* get the parent */
-
-                                thisStartingPath = altPath + Path.DirectorySeparatorChar +
-                                                   configAttr.ToString() + Path.DirectorySeparatorChar +
-                                                   processorArch.ToString();
-
-                                Console.WriteLine(" - New alt = " + thisStartingPath);
-                            }
-                        }
-                        else
-                        {
-                            isSearchDone = true;
-                        }
-                    }
-                } /* while not found */
-            } /*  thisPath is not empty */
-
-            return ret;
-        }
-
-        /* Helper to find wolfSSL in the usual locations */
-        private static string GetWolfSSLPath(string default_path)
-        {
-            string wolfsslPath;
-            string dllPath;
-
-            if (default_path == wolfssl_dll)
-            {
-                /* this will typically be [WOLFSSL_ROOT]\\wrapper\\CSharp\\Debug\\x64" */
-                wolfsslPath = Environment.CurrentDirectory; /* no path specified */
-            }
-            else
-            {
-                /* some other path specified */
-                wolfsslPath = default_path;
-            }
-
-            wolfsslPath = CheckWolfSSLPath(wolfsslPath, "Default location" );
-
-            if (string.IsNullOrEmpty(wolfsslPath))
-            {
-                wolfsslPath =CheckWolfSSLPath(
-                     GetConfigValue(WOLFSSL_DLL_PATH_KEY),
-                    "App.config " + WOLFSSL_DLL_PATH_KEY + " setting");
-            }
-
-            if (string.IsNullOrEmpty(wolfsslPath))
-            {
-                wolfsslPath = CheckWolfSSLPath(
-                    Environment.GetEnvironmentVariable("WOLFSSL_ROOT"),
-                    "Environment Variable WOLFSSL_ROOT setting");
-            }
-
-            /* Did we find wolfSSL specified anywhere? */
-            if (string.IsNullOrEmpty(wolfsslPath))
-            {
-                /* Just use the name, search using path */
-                wolfsslPath = "";
-                dllPath = Path.Combine(wolfsslPath, "wolfssl.dll");
-            }
-            else
-            {
-                dllPath = wolfsslPath;
-            }
-
-
-            if (!File.Exists(dllPath))
-            {
-                WriteDebugString("Will try to find wolfSSL in system path.", "");
-                dllPath = "wolfssl.dll";
-            }
-
-            return dllPath;
-        } /* GetWolfSSLPath */
 
         /********************************
          * Init wolfSSL library
@@ -859,84 +489,27 @@ namespace wolfSSL.CSharp
             }
         }
 
+#if NET471_OR_GREATER
         /// <summary>
         /// Utility function used to access the certificates
         /// based on the platform.
         /// <returns>return the platform specific path to the certificate</returns>
         /// </summary>
         public static string setPath(string file) {
-            string pathPrefix = "";
-            bool foundCertFile = false;
-            PlatformID platform = Environment.OSVersion.Platform;
-
-            pathPrefix = GetConfigValue(WOLFSSL_CERTS_PATH_KEY);
-            if (string.IsNullOrEmpty(pathPrefix))
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                WriteDebugString("No App.config setting found for %s", WOLFSSL_CERTS_PATH_KEY);
+                Console.WriteLine("Linux - " + file);
+                return @"../../certs/" + file;
+            } else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                Console.WriteLine("Windows - " + file);
+                return @"../../../../certs/" + file;
+            } else
+            {
+                return "";
             }
-            else
-            {
-                pathPrefix = GetConfigValue(WOLFSSL_CERTS_PATH_KEY);
-                if (string.IsNullOrEmpty(pathPrefix))
-                {
-                    WriteDebugString("SetPath App.config " + WOLFSSL_CERTS_PATH_KEY + " is not configured.", "");
-                }
-                else
-                {
-                    WriteDebugString("Found App.config WOLFSSL_CERTS_PATH_KEY: '%s'", pathPrefix);
-                    pathPrefix += Path.DirectorySeparatorChar;
-                    foundCertFile = (File.Exists(pathPrefix + file));
-                    if (foundCertFile)
-                    {
-                        WriteDebugString("Found cert file: '%s'", pathPrefix + file);
-                    }
-                    else
-                    {
-                        WriteDebugString("Not found: '%s'", pathPrefix + file);
-                    }
-                }
-            }
-
-            if (!foundCertFile)
-            {
-                if (platform == PlatformID.Unix || platform == PlatformID.MacOSX)
-                {
-                    pathPrefix = @"../../certs/";
-                    Console.Write("Linux cert path: ");
-                }
-                else if (platform == PlatformID.Win32NT ||
-                         platform == PlatformID.Win32Windows ||
-                         platform == PlatformID.Win32S ||
-                         platform == PlatformID.WinCE)
-                {
-                    pathPrefix = @"../../../../certs/";
-                    Console.Write("Windows cert path: ");
-                }
-                else
-                {
-                    Console.WriteLine("WARNING: Platform not detected. Looking for certs in local directory.");
-                    pathPrefix = "";
-                }
-                foundCertFile = (File.Exists(pathPrefix + Path.DirectorySeparatorChar + file));
-
-                /* Not found with App config, nor usual example directory structure, try one parent up. */
-                if (!foundCertFile)
-                {
-                    /* Client example solution is one directory deeper */
-                    pathPrefix = "../" + pathPrefix;
-                    if (!Directory.Exists(pathPrefix))
-                    {
-                        Console.WriteLine("Path not found: " + pathPrefix);
-                    }
-                }
-            } /* !foundCertFile with App.config */
-
-
-
-            Console.WriteLine(Path.GetFullPath(pathPrefix + file));
-            return Path.GetFullPath(pathPrefix + file);
         }
-
+#endif
 
         /// <summary>
         /// Call back to allow receiving TLS information
@@ -1218,7 +791,13 @@ namespace wolfSSL.CSharp
                 int ret;
                 byte[] msg;
 
-                buf.Length = 0;/* Clear incoming buffer; buf.Clear(); not available in old frameworks */
+                /* Clear incoming buffer */
+            #if NET40_OR_GREATER
+                buf.Clear();
+            #else
+                buf.Length = 0;
+            #endif
+
                 if (sslCtx == IntPtr.Zero)
                 {
                     log(ERROR_LOG, "read ssl unwrap error");
@@ -1794,74 +1373,6 @@ namespace wolfSSL.CSharp
             }
         }
 
-        public static Socket DeserializeSocket(string serializedData)
-        {
-            if (string.IsNullOrEmpty(serializedData))
-                throw new ArgumentException("Invalid serialized socket data");
-
-            string[] parts = serializedData.Split(':');
-            if (parts.Length != 2)
-                throw new FormatException("Invalid socket format");
-
-            string address = parts[0];
-            int port = int.Parse(parts[1]);
-
-            // Create and connect a new socket
-            Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            socket.Connect(IPAddress.Parse(address), port);
-
-            return socket;
-        }
-
-
-
-        /// <summary>
-        /// Set Socket for TLS connection
-        /// </summary>
-        /// <param name="ssl">structure to set Socket in</param>
-        /// <param name="fd">Socket to use</param>
-        /// <returns>1 on success</returns>
-        public static int set_fd_new(IntPtr ssl, string receivedData)
-        {
-            Socket fd = DeserializeSocket(receivedData);
-            /* sanity check on inputs */
-            if (ssl == IntPtr.Zero)
-            {
-                return FAILURE;
-            }
-
-            try
-            {
-                if (!fd.Equals(null))
-                {
-                    GCHandle gch = GCHandle.FromIntPtr(ssl);
-                    ssl_handle handles = (ssl_handle)gch.Target;
-                    IntPtr sslCtx = handles.get_ssl();
-                    IntPtr ptr;
-                    GCHandle fd_pin = GCHandle.Alloc(fd);
-
-                    if (sslCtx == IntPtr.Zero)
-                    {
-                        log(ERROR_LOG, "wolfssl error setting up fd!!");
-                        return FAILURE;
-                    }
-
-                    handles.set_fd(fd_pin);
-                    ptr = GCHandle.ToIntPtr(fd_pin);
-                    wolfSSL_SetIOWriteCtx(sslCtx, ptr); //pass along the socket for writing to
-                    wolfSSL_SetIOReadCtx(sslCtx, ptr); //pass along the socket for reading from
-
-                    return SUCCESS;
-                }
-
-                return FAILURE;
-            }
-            catch (Exception e)
-            {
-                log(ERROR_LOG, "Error setting up fd!! " + e.ToString());
-                return FAILURE;
-            }
-        }
 
         /// <summary>
         /// Get socket of a TLS connection
@@ -1995,6 +1506,7 @@ namespace wolfSSL.CSharp
             }
         }
 
+
         /// <summary>
         /// Initialize wolfSSL library
         /// </summary>
@@ -2003,52 +1515,6 @@ namespace wolfSSL.CSharp
         {
             try
             {
-                string this_wolfssl_path;
-                if (_WOLFSSL_DLL_PATH == string.Empty)
-                {
-                    this_wolfssl_path = GetWolfSSLPath(wolfssl_dll);
-                }
-                else
-                {
-                    /* typically a special case of older versions of Visual Studio, _WOLFSSL_DLL_PATH set with wolfssl.set_WOLFSSL_DLL_PATH */
-                    this_wolfssl_path = _WOLFSSL_DLL_PATH + "\\" + wolfssl_dll;
-                }
-
-                _dllHandle = LoadLibrary(this_wolfssl_path);
-                if (_dllHandle == IntPtr.Zero)
-                {
-                    Console.WriteLine("Warning: Could not load " + this_wolfssl_path);
-                    if (File.Exists(this_wolfssl_path))
-                    {
-                        Console.WriteLine("File found, check contents or security settings");
-                    }
-                    else
-                    {
-                        Console.WriteLine("File not found: " + this_wolfssl_path);
-                    }
-                    /* We could throw an exception here, but GetProcAddress should throw one, below */
-                }
-                else
-                {
-                    if (_DEBUG_WOLFSSL)
-                    {
-                        Console.WriteLine("Successfully loaded wolfssl: " + this_wolfssl_path);
-                    }
-                    else
-                    {
-                        /* Alternatively check the Project Build Configuration for DEBUG */
-                        WriteDebugString("Successfully loaded wolfssl: %s", this_wolfssl_path);
-                    }
-                }
-
-                IntPtr initPtr = GetProcAddress(_dllHandle, "wolfSSL_Init");
-                if (initPtr == IntPtr.Zero)
-                {
-                    Console.WriteLine("Error: Could not find function wolfSSL_Init.");
-                    Console.WriteLine("Check for build preprocessor option: WOLFSSL_DLL");
-                    Console.WriteLine("Try building with the 'DLL Debug' configuration.");
-                    FreeLibrary(_dllHandle);
-                }
                 return wolfSSL_Init();
             }
             catch (Exception e)
@@ -2717,7 +2183,6 @@ namespace wolfSSL.CSharp
         /// </summary>
         public static void Debugging_ON()
         {
-            _DEBUG_WOLFSSL = true;
             wolfSSL_Debugging_ON();
         }
 
@@ -2726,14 +2191,9 @@ namespace wolfSSL.CSharp
         /// </summary>
         public static void Debugging_OFF()
         {
-            _DEBUG_WOLFSSL = false;
             wolfSSL_Debugging_OFF();
         }
 
-        public static bool DEBUG_WOLFSSL()
-        {
-            return _DEBUG_WOLFSSL;
-        }
         /// <summary>
         /// Set the function to use for logging
         /// </summary>
