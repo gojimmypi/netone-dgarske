@@ -45,11 +45,9 @@ namespace NETtime.WinCE.Globals
         {
             Utility.ExtractDependencyFile("NETtime.WinCE.Resources.Cert.dh2048.pem", Utility.LocalPath + "\\Cert", "dh2048.pem", true, false);
             Utility.ExtractDependencyFile("NETtime.WinCE.Resources.Cert.ca-cert.pem", Utility.LocalPath + "\\Cert", "ca-cert.pem", true, false);
-            Utility.ExtractDependencyFile("NETtime.WinCE.Resources.Wolfssl.wolfssl.dll", Utility.LocalPath + "\\wolfssl", "wolfssl.dll", true, false);
-            //Utility.ExtractDependencyFile("NETtime.WinCE.Resources.Wolfssl.wolfssl.exp", Utility.LocalPath + "\\wolfssl", "wolfssl.exp", true, false);
-            //Utility.ExtractDependencyFile("NETtime.WinCE.Resources.Wolfssl.wolfssl.ilk", Utility.LocalPath + "\\wolfssl", "wolfssl.ilk", true, false);
-            //Utility.ExtractDependencyFile("NETtime.WinCE.Resources.Wolfssl.wolfssl.lib", Utility.LocalPath + "\\wolfssl", "wolfssl.lib", true, false);
-            //Utility.ExtractDependencyFile("NETtime.WinCE.Resources.Wolfssl.wolfssl.pdb", Utility.LocalPath + "\\wolfssl", "wolfssl.pdb", true, false);
+            Utility.ExtractDependencyFile("NETtime.WinCE.Resources.wolfssl.dll", Utility.LocalPath, "wolfssl.dll", true, false);
+            Utility.ExtractDependencyFile("NETtime.WinCE.Resources.wolfssl.exp", Utility.LocalPath, "wolfssl.exp", true, false);
+            Utility.ExtractDependencyFile("NETtime.WinCE.Resources.wolfssl.lib", Utility.LocalPath, "wolfssl.lib", true, false);
         }
     }
 }

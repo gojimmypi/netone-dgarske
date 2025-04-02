@@ -2,7 +2,7 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="WOLFSSL"
+	Name="wolfssl"
 	ProjectGUID="{6E6F3282-9AAB-456B-A56E-C064D798E975}"
 	RootNamespace="WOLFSSL"
 	TargetFrameworkVersion="196613"
@@ -107,7 +107,7 @@
 				ExecutionBucket="7"
 				Optimization="0"
 				AdditionalIncludeDirectories="&quot;$(ProjectDir)&quot;"
-				PreprocessorDefinitions="WOLFSSL_USER_SETTINGS;ARM;BUILDING_WOLFSSL"
+				PreprocessorDefinitions="WOLFSSL_USER_SETTINGS;ARM;BUILDING_WOLFSSL;WOLFSSL_DLL"
 				MinimalRebuild="true"
 				RuntimeLibrary="3"
 				BufferSecurityCheck="false"
@@ -145,7 +145,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy &quot;$(OutDir)\$(ProjectName).dll&quot; &quot;$(SolutionDir)\WinCE\Resources\Wolfssl\&quot;"
+				CommandLine="copy &quot;$(OutDir)\$(ProjectName).dll&quot; &quot;$(SolutionDir)\WinCE\Resources\&quot;&#x0D;&#x0A;copy &quot;$(OutDir)\$(ProjectName).lib&quot; &quot;$(SolutionDir)\WinCE\Resources\&quot;&#x0D;&#x0A;copy &quot;$(OutDir)\$(ProjectName).exp&quot; &quot;$(SolutionDir)\WinCE\Resources\&quot;"
 			/>
 			<DeploymentTool
 				ForceDirty="-1"

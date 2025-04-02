@@ -114,9 +114,9 @@
     <None Include="ClassDiagram3.cd" />
     <EmbeddedResource Include="Resources\Cert\ca-cert.pem" />
     <EmbeddedResource Include="Resources\Cert\dh2048.pem" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Resources\Wolfssl\wolfssl.dll" />
+    <EmbeddedResource Include="Resources\wolfssl.dll" />
+    <EmbeddedResource Include="Resources\wolfssl.lib" />
+    <EmbeddedResource Include="Resources\wolfssl.exp" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />
   <ProjectExtensions>
