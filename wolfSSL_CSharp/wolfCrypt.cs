@@ -312,7 +312,7 @@ namespace wolfSSL.CSharp
         public static readonly int OTHER_LOG = 4;
         public static readonly int INVALID_DEVID = -2;
         public static readonly int ECC_MAX_SIG_SIZE = 141;    /* ECC max sig size */
-        public static readonly int  ECC_KEY_SIZE = 32;       /* ECC key size */
+        public static readonly int ECC_KEY_SIZE = 32;         /* ECC key size */
         public static readonly int MAX_ECIES_TEST_SZ = 200;   /* ECIES max sig size */
         public static readonly int ED25519_SIG_SIZE = 64;     /* ED25519 pub + priv  */
         public static readonly int ED25519_KEY_SIZE = 32;     /* Private key only */
@@ -2430,20 +2430,12 @@ namespace wolfSSL.CSharp
         /// Export both private and public keys from a Curve25519 key structure
         /// </summary>
         /// <param name="key">Curve25519 key structure</param>
-        /// <returns>A tuple containing the private key and public key as byte arrays</returns>
-    #if NET7_0_OR_GREATER
-        public static (byte[] privateKey, byte[] publicKey) Curve25519ExportKeyRaw(IntPtr key)
-    #else
+        /// <param name="privateKey">returned raw private key as byte array</param>
+        /// <param name="publicKey">returned raw public key as byte array</param>
         public static void Curve25519ExportKeyRaw(IntPtr key, out byte[] privateKey, out byte[] publicKey)
-    #endif
         {
-        #if NET7_0_OR_GREATER
-            byte[] privateKey = new byte[ED25519_KEY_SIZE];
-            byte[] publicKey = new byte[ED25519_PUB_KEY_SIZE];
-        #else
             privateKey = new byte[ED25519_KEY_SIZE];
             publicKey = new byte[ED25519_PUB_KEY_SIZE];
-        #endif
             uint privSize = (uint)privateKey.Length;
             uint pubSize = (uint)publicKey.Length;
             int ret = wc_curve25519_export_key_raw(key, privateKey, ref privSize, publicKey, ref pubSize);
@@ -2451,11 +2443,7 @@ namespace wolfSSL.CSharp
             {
                 throw new Exception("Failed to export Curve25519 keys. Error code: " + ret);
             }
-        #if NET7_0_OR_GREATER
-            return (privateKey, publicKey);
-        #else
             return;
-        #endif
         }
         /* END RAW Curve25519 */
 

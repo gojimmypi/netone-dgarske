@@ -9,7 +9,7 @@ namespace NETtime.WinCE.Globals
 {
     static class Application
     {
-        //APR0067962: Soft Reboot to resolve balck screen issue 
+        //APR0067962: Soft Reboot to resolve balck screen issue
         public enum ApplicationState
         {
             Running,
@@ -18,7 +18,7 @@ namespace NETtime.WinCE.Globals
 
         private delegate void Callback();
 
-        //APR0067962: Soft Reboot to resolve balck screen issue 
+        //APR0067962: Soft Reboot to resolve balck screen issue
         public static ApplicationState State
         {
             get;
@@ -30,7 +30,7 @@ namespace NETtime.WinCE.Globals
 
             try
             {
-               
+
                 //
                 InstallCommonAssemblies();
                 WOLFSSLWrapper.ConnectToServer();

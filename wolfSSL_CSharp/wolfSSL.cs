@@ -489,18 +489,23 @@ namespace wolfSSL.CSharp {
             }
         }
 
-#if NET471_OR_GREATER
         /// <summary>
         /// Utility function used to access the certificates
         /// based on the platform.
         /// <returns>return the platform specific path to the certificate</returns>
         /// </summary>
         public static string setPath(string file) {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            PlatformID platform = Environment.OSVersion.Platform;
+
+            if (platform == PlatformID.Unix ||
+                platform == PlatformID.MacOSX)
             {
                 Console.WriteLine("Linux - " + file);
                 return @"../../certs/" + file;
-            } else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            } else if (platform == PlatformID.Win32NT ||
+                       platform == PlatformID.Win32Windows ||
+                       platform == PlatformID.Win32S ||
+                       platform == PlatformID.WinCE)
             {
                 Console.WriteLine("Windows - " + file);
                 return @"../../../../certs/" + file;
@@ -509,7 +514,6 @@ namespace wolfSSL.CSharp {
                 return "";
             }
         }
-#endif
 
         /// <summary>
         /// Call back to allow receiving TLS information
@@ -792,11 +796,7 @@ namespace wolfSSL.CSharp {
                 byte[] msg;
 
                 /* Clear incoming buffer */
-            #if NET40_OR_GREATER
-                buf.Clear();
-            #else
                 buf.Length = 0;
-            #endif
 
                 if (sslCtx == IntPtr.Zero)
                 {

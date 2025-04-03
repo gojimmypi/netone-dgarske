@@ -38,8 +38,8 @@ public static class WOLFSSLWrapper
         }
         public static void ConnectToServer()
         {
-            StringBuilder caCert = new StringBuilder("ca-cert.pem");
-            StringBuilder dhparam = new StringBuilder("dh2048.pem");
+            StringBuilder caCert = new StringBuilder("\\Cert\\ca-cert.pem");
+            StringBuilder dhparam = new StringBuilder("\\Cert\\dh2048.pem");
             // Initialize WolfSSL
             if (wolfssl.Init() == wolfssl.SUCCESS)
             {
