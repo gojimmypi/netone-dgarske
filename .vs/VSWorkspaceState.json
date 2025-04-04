@@ -1,7 +1,12 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\WOLFSSL",
+    "\\WOLFSSL\\src",
+    "\\WOLFSSL\\wolfcrypt",
+    "\\WOLFSSL\\wolfcrypt\\src",
+    "\\wolfSSL_CSharp"
   ],
-  "SelectedNode": "\\WLANWRAPPER.sln",
+  "SelectedNode": "\\WOLFSSL\\wolfcrypt\\src\\asn.c",
   "PreviewInSolutionExplorer": false
 }
