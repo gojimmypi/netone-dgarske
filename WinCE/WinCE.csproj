@@ -69,11 +69,39 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="DPUruNet, Version=1.0.0.0, Culture=neutral, PublicKeyToken=7f32ef930fec5e5f, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Resources\UareU_CE6\DPUruNet.dll</HintPath>
+    </Reference>
+    <Reference Include="Fplibn, Version=1.0.3614.30936, Culture=neutral">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Resources\fplibn.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.WindowsCE.Forms" />
     <Reference Include="mscorlib" />
+    <Reference Include="OpenNETCF, Version=2.3.12317.0, Culture=neutral, PublicKeyToken=e60dbea84bb431b7, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Resources\OpenNETCF.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="OpenNETCF.Configuration, Version=2.3.12317.0, Culture=neutral, PublicKeyToken=e60dbea84bb431b7, processorArchitecture=MSIL" />
+    <Reference Include="OpenNETCF.Net, Version=2.3.12317.0, Culture=neutral, PublicKeyToken=e60dbea84bb431b7, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Resources\OpenNETCF.Net.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="OpenNETCF.WindowsCE, Version=2.3.12317.0, Culture=neutral, PublicKeyToken=e60dbea84bb431b7, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Resources\OpenNETCF.WindowsCE.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="OpenNETCF.WindowsCE.Messaging, Version=2.3.12317.0, Culture=neutral, PublicKeyToken=e60dbea84bb431b7, processorArchitecture=MSIL" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Data.SQLite, Version=1.0.65.0, Culture=neutral, PublicKeyToken=1fdb50b1b62b4c84, processorArchitecture=MSIL">
+      <HintPath>Resources\System.Data.SQLite.dll</HintPath>
+    </Reference>
     <Reference Include="System.Drawing" />
     <Reference Include="System.Web.Services" />
     <Reference Include="System.Windows.Forms" />
@@ -114,9 +142,13 @@
     <None Include="ClassDiagram3.cd" />
     <EmbeddedResource Include="Resources\Cert\ca-cert.pem" />
     <EmbeddedResource Include="Resources\Cert\dh2048.pem" />
-    <EmbeddedResource Include="Resources\wolfssl.dll" />
-    <EmbeddedResource Include="Resources\wolfssl.lib" />
-    <EmbeddedResource Include="Resources\wolfssl.exp" />
+    <EmbeddedResource Include="Resources\Wolfssl\wolfssl.exp" />
+    <EmbeddedResource Include="Resources\Wolfssl\wolfssl.ilk" />
+    <EmbeddedResource Include="Resources\Wolfssl\wolfssl.lib" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Wolfssl\wolfssl.dll" />
+    <EmbeddedResource Include="Resources\Wolfssl\wolfssl.pdb" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />
   <ProjectExtensions>

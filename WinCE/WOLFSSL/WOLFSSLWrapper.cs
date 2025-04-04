@@ -38,8 +38,13 @@ public static class WOLFSSLWrapper
         }
         public static void ConnectToServer()
         {
-            StringBuilder caCert = new StringBuilder("\\Cert\\ca-cert.pem");
-            StringBuilder dhparam = new StringBuilder("\\Cert\\dh2048.pem");
+            /* See new set_WOLFSSL_DLL_PATH() and set_WOLFSSL_CERTS_PATH() in wolfSSL.cs */
+            wolfssl.set_WOLFSSL_DLL_PATH("C:\\workspace\\wolfssl_demo\\bin");
+            wolfssl.set_WOLFSSL_CERTS_PATH("C:\\workspace\\wolfssl_demo\\certs");
+
+            StringBuilder myPath = new StringBuilder("C:\\workspace\\wolfssl-gojimmypi\\certs\\");
+            StringBuilder caCert = new StringBuilder(myPath.ToString() + "ca-cert.pem");
+            StringBuilder dhparam = new StringBuilder(myPath.ToString() + "dh2048.pem");
             // Initialize WolfSSL
             if (wolfssl.Init() == wolfssl.SUCCESS)
             {

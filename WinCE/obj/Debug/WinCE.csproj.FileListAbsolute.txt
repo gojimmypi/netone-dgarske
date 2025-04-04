@@ -458,3 +458,4 @@ C:\git\repos\NetOneNew\NetOne\WinCE\bin\Debug\NETOne.exe
 C:\git\repos\NetOneNew\NetOne\WinCE\bin\Debug\NETOne.pdb
 C:\git\repos\NetOneNew\NetOne\WinCE\bin\Debug\wolfSSL_CSharp.dll
 C:\git\repos\NetOneNew\NetOne\WinCE\bin\Debug\wolfSSL_CSharp.pdb
+Z:\wolfssl-VM2008\netone-dgarske\WinCE\obj\Debug\ResolveAssemblyReference.cache

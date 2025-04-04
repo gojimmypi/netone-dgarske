@@ -49,8 +49,8 @@ namespace NETtime.WinCE
 
         public static void ConnectToServer()
         {
-            StringBuilder caCert = new StringBuilder("Cert\\ca-cert.pem");
-            StringBuilder dhparam = new StringBuilder("Cert\\dh2048.pem");
+            StringBuilder caCert = new StringBuilder("\\ca-cert.pem");
+            StringBuilder dhparam = new StringBuilder("\\dh2048.pem");
             // Initialize WolfSSL
             if (wolfssl.Init() == wolfssl.SUCCESS)
             {
@@ -62,9 +62,7 @@ namespace NETtime.WinCE
             }
 
             // Create a new WolfSSL context
-            // GCHandle.ToIntPtr() does not exit in v3.5
-            IntPtr method = wolfssl.useTLSv1_2_client();
-            IntPtr ctx = wolfssl.CTX_new((IntPtr)method);
+            IntPtr ctx = wolfssl.CTX_new(wolfssl.useTLSv1_2_client());
             if (ctx == IntPtr.Zero)
             {
                 Console.WriteLine("Error in creating ctx structure");
@@ -245,11 +243,11 @@ namespace NETtime.WinCE
 
         static IPEndPoint GetEndPoint(string hostname, int port)
         {
-
+            
             IPHostEntry hostEntry = Dns.GetHostEntry(hostname);
             IPAddress ipAddress = hostEntry.AddressList[0]; // Get the first IP address
             return new IPEndPoint(ipAddress, port);
         }
-
+    
     }
 }
